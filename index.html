@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+</head>
+<body onload="getCityList()">
+
+
+<h2 style="text-align: center;">tėvų paieška pagal rajona</h2>
+<div class="form-group" id="rajonai" style="text-align: center;">
+</div>
+
+
+<div class="container">
+   <table id="lentele" class="table table-bordered">
+       <thead>
+           <tr>
+              <th>ID</th>
+              <th>Vardas</th>
+             </tr>
+         </thead>
+           <tbody> 
+           </tbody>
+     </table>
+</div>
+
+
+
+<form">
+  <div class="form-group" style="margin: auto;max-width: 250px;">
+    <label for="usr">Vardas:</label>
+    <input type="text" class="form-control" id="usr">
+  </div>
+  <div class="form-group"  style="margin: auto;max-width: 250px;">
+    <label for="pridejimoKodas">Pridėjimo Kodas:</label>
+    <input type="text" class="form-control" id="pridejimoKodas">
+  </div>
+  <div style="text-align: center;margin-top: 15px;">
+  <button type="button" onclick="postParent()"   class="btn btn-primary" >Submit</button>
+  </div>
+</form>
+<h2 id="result" style="text-align: center;"></h2>
+
+
+
+
+
+</body>
+<script>
+  function getParentsByCity(myId) {
+    $('#lentele tbody').empty()
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+      var obj = JSON.parse(this.responseText);
+         for(var i = 0 ; i < obj.length; i++){
+            $('#lentele tbody').append("<tr><td>" + obj[i].tevasId + "</td><td>" + obj[i].vardas + "</td><td>"+ myId +"</td></tr>");
+         }
+      }
+    };
+    xhttp.open("GET", "https://localhost:44351/api/tevai/tevaibyrajonas/" + myId + "" ,true);
+    xhttp.send();
+  }
+
+
+  function postParent() {
+    var pridejimoKodas = document.getElementById("pridejimoKodas").value;
+
+    const params = {
+            vardas: document.querySelector('#usr').value,
+        }
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+      console.log(this.responseText);
+      document.getElementById("result").innerHTML = "Tevas buvo sekmingai sukurtas";
+      document.getElementById("result").style = "color: green;text-align: center;";
+     document.getElementById("pridejimoKodas").value = "";
+      document.querySelector('#usr').value = "";
+      }else{
+        document.getElementById("result").innerHTML = "Iviko klaida";
+        document.getElementById("result").style = "color: red;text-align: center;";
+      }
+    };
+    xhttp.open("POST", "https://localhost:44351/api/tevai/pridejimokodas/" + pridejimoKodas + "" ,true);
+    xhttp.setRequestHeader('Content-type', 'application/json')
+    xhttp.send(JSON.stringify(params));
+  }
+  
+  
+  
+  function getCityList() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+      if (this.readyState == 4 && this.status == 200) {
+      var obj = JSON.parse(this.responseText);
+         
+         for(var i = 0 ; i < obj.length; i++){
+            $('#rajonai').append("<button type=\"button\" id=\""+ obj[i].rajonasId + "\" class=\"btn btn-primary\">" + obj[i].pavadinimas + "</button>");
+               document.getElementById(obj[i].rajonasId).addEventListener('click', function(){
+               getParentsByCity(this.id);
+                });
+               
+          }  
+        }
+   };
+    xhttp.open("GET", "https://localhost:44351/api/rajonai", true);
+    xhttp.send();
+  }
+  
+  </script>
+</html>
+
+
+
